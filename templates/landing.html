@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Expense Tracker - Know where your money goes{% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block content %}
+{% set months = [
+    ("January", "❄️", "#e4eaf1"), ("February", "💝", "#fadcdf"), ("March", "🌱", "#dfe9d3"),
+    ("April", "🌸", "#f5efd9"), ("May", "🌷", "#e9efdc"), ("June", "🌼", "#fbe6d3"),
+    ("July", "🐚", "#d6e6f2"), ("August", "🌻", "#fbeab8"), ("September", "🍂", "#f7e1cf"),
+    ("October", "🍁", "#f6dcc0"), ("November", "🌾", "#ecd6cc"), ("December", "🎄", "#dbe7e4")
+] %}
+
+<div class="hero">
+    <h1>My Expense Tracker</h1>
+    <div class="divider">♥</div>
+    <p class="tagline">A calm, pretty place to track your spending, see how much you save, and understand your money week by week, month by month and year by year.</p>
+    <a class="btn big" href="/dashboard">Get Started →</a>
+</div>
+
+<div class="features">
+    <div class="card feature">
+        <div class="icon">📝</div>
+        <h2>Add in seconds</h2>
+        <p>Record expenses and income with an amount, a category and a date.</p>
+    </div>
+    <div class="card feature">
+        <div class="icon">🗂️</div>
+        <h2>Category summary</h2>
+        <p>See your total spending and how it splits across Food, Travel, Shopping and Bills.</p>
+    </div>
+    <div class="card feature">
+        <div class="icon">🐷</div>
+        <h2>Savings tracker</h2>
+        <p>Find out how much you saved this week, this month and this year.</p>
+    </div>
+    <div class="card feature">
+        <div class="icon">📊</div>
+        <h2>Smart reports</h2>
+        <p>Switch between weekly, monthly and yearly reports with a clear income vs spending chart.</p>
+    </div>
+    <div class="card feature">
+        <div class="icon">🎨</div>
+        <h2>Pick your theme</h2>
+        <p>Choose pink, green, blue, white, red or night, whichever matches your mood.</p>
+    </div>
+    <div class="card feature">
+        <div class="icon">📱</div>
+        <h2>Works on any screen</h2>
+        <p>Use it on your phone, tablet or laptop, and the layout adjusts by itself.</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Every month, a fresh page</h2>
+    <div class="months">
+        {% for name, icon, tint in months %}
+        <div class="sticker" data-m="{{ loop.index0 }}" style="--tint: {{ tint }}">
+            <span>{{ name }}</span><i>{{ icon }}</i>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>How it works</h2>
+    <ol class="steps">
+        <li>Press <b>Get Started</b> to open your dashboard.</li>
+        <li>Add your <b>expenses</b> and your <b>income</b> as they happen.</li>
+        <li>Watch your <b>total, category summary and savings</b> update instantly.</li>
+        <li>Open <b>Reports</b> to see weekly, monthly or yearly trends.</li>
+        <li>Made a mistake? <b>Delete</b> an expense with one click.</li>
+        <li>Pick a <b>theme</b> with the colored dots at the top.</li>
+    </ol>
+</div>
+
+<div class="cta">
+    <a class="btn big" href="/dashboard">Open my dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Reports - Expense Tracker{% endblock %}
+
+{% block content %}
+<h1>My Reports</h1>
+<div class="divider">♥</div>
+
+<div class="tabs">
+    <a href="/report?view=week" class="{{ 'on' if view == 'week' }}">Weekly</a>
+    <a href="/report?view=month" class="{{ 'on' if view == 'month' }}">Monthly</a>
+    <a href="/report?view=year" class="{{ 'on' if view == 'year' }}">Yearly</a>
+</div>
+
+{% if rows %}
+<div class="card">
+    <h2>Income vs spending</h2>
+    <div class="legend">
+        <span><i class="li"></i>Income</span>
+        <span><i class="ls"></i>Spent</span>
+    </div>
+    <div class="chart">
+        {% for r in rows %}
+        <div class="bar-group">
+            <div class="bars">
+                <div class="bar income" style="height: {{ r['income_pct'] }}%;" title="Income ₹{{ '%.2f'|format(r['income']) }}"></div>
+                <div class="bar spent" style="height: {{ r['spent_pct'] }}%" title="Spent ₹{{ '%.2f'|format(r['spent']) }}"></div>
+            </div>
+            <div class="bar-label">{{ r["label"] }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Details</h2>
+    <div class="table-wrap">
+        <table>
+            <tr>
+                <th>Period</th>
+                <th>Income (₹)</th>
+                <th>Spent (₹)</th>
+                <th>Saved (₹)</th>
+            </tr>
+            {% for r in rows|reverse %}
+            <tr>
+                <td>{{ r["label"] }}</td>
+                <td>{{ "%.2f"|format(r["income"]) }}</td>
+                <td>{{ "%.2f"|format(r["spent"]) }}</td>
+                <td class="{{ 'neg' if r['saved'] < 0 else 'pos' }}">{{ "%.2f"|format(r["saved"]) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p>No data yet. Add some expenses and income, and your report will appear here.</p>
+    <a class="btn" href="/add">+ Add Expense</a>
+</div>
+{% endif %}
+{% endblock %}

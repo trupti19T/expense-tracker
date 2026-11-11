@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Expense Tracker{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
+    <script>
+        try {
+            document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "pink");
+        } catch (e) {
+            document.documentElement.setAttribute("data-theme", "pink");
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div id="sky"></div>
+<div class="container">
+
+    <header class="topbar">
+        <a class="logo" href="/">Expense Tracker</a>
+                {% block nav %}
+        <nav>
+            <a href="/" class="{{ 'active' if request.path == '/' }}">Home</a>
+            <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' }}">Dashboard</a>
+            <a href="/add" class="{{ 'active' if request.path == '/add' }}">Add Expense</a>
+            <a href="/add-income" class="{{ 'active' if request.path == '/add-income' }}">Add Income</a>
+            <a href="/report" class="{{ 'active' if request.path == '/report' }}">Reports</a>
+        </nav>
+        {% endblock %}
+        
+        <div class="themes">
+            <button type="button" class="dot" data-theme="pink" title="Pink blossoms"></button>
+            <button type="button" class="dot" data-theme="green" title="Green leaves"></button>
+            <button type="button" class="dot" data-theme="blue" title="Blue sky"></button>
+            <button type="button" class="dot" data-theme="white" title="Water and wind"></button>
+            <button type="button" class="dot" data-theme="red" title="Fire and roses"></button>
+            <button type="button" class="dot" data-theme="black" title="Night sky"></button>
+        </div>
+    </header>
+
+    <div class="quote" id="quote"></div>
+
+    {% block content %}{% endblock %}
+
+</div>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

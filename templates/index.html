@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<div class="divider">♥</div>
+
+<div class="actions">
+    <div class="sticker big"><span id="thisMonth"></span></div>
+    <a class="btn" href="/add">+ Add Expense</a>
+    <a class="btn" href="/add-income">+ Add Income</a>
+    <a class="btn" href="/report">View Reports</a>
+</div>
+
+<div class="card">
+    <div>Total spent</div>
+    <p class="total">₹{{ "%.2f"|format(total) }}</p>
+</div>
+
+<div class="card">
+    <h2>My savings</h2>
+    <div class="savings-grid">
+        {% for label, s in [("This week", savings["week"]), ("This month", savings["month"]), ("This year", savings["year"])] %}
+        <div class="save-box">
+            <div class="label">{{ label }}</div>
+            <div class="amount {{ 'neg' if s['saved'] < 0 }}">₹{{ "%.2f"|format(s["saved"]) }}</div>
+            <small>Income ₹{{ "%.2f"|format(s["income"]) }} · Spent ₹{{ "%.2f"|format(s["spent"]) }}</small>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="hint">Savings = income − expenses for that period. Add your income to see accurate savings.</p>
+</div>
+
+<div class="card">
+    <h2>Spending by category</h2>
+    <div class="table-wrap">
+        <table>
+            <tr>
+                <th>Category</th>
+                <th>No. of expenses</th>
+                <th>Total (₹)</th>
+            </tr>
+            {% for s in summary %}
+            <tr>
+                <td>{{ s["category"] }}</td>
+                <td>{{ s["count"] }}</td>
+                <td>{{ "%.2f"|format(s["total"]) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2>All expenses</h2>
+    {% if expenses %}
+    <div class="table-wrap">
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>What</th>
+                <th>Category</th>
+                <th>Amount (₹)</th>
+                <th>Action</th>
+            </tr>
+            {% for e in expenses %}
+            <tr>
+                <td>{{ e["expense_date"]|dmy }}</td>
+                <td>{{ e["title"] }}</td>
+                <td>{{ e["category"] }}</td>
+                <td>{{ "%.2f"|format(e["amount"]) }}</td>
+                <td>
+                    <form method="POST" action="/delete/{{ e['id'] }}"
+                          class="delete-form"
+                          data-name="{{ e['title'] }} (₹{{ '%.2f'|format(e['amount']) }})">
+                        <button type="submit" class="danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}
+    <p>No expenses yet. Add your first one!</p>
+    {% endif %}
+</div>
+
+<div class="modal-overlay" id="modal">
+    <div class="modal-box">
+        <h3>Delete this expense?</h3>
+        <p id="modal-text"></p>
+        <div class="modal-actions">
+            <button type="button" class="ghost" id="cancelBtn">Cancel</button>
+            <button type="button" class="danger" id="confirmBtn">Yes, delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var pendingForm = null;
+    var modal = document.getElementById("modal");
+
+    function closeModal() {
+        modal.classList.remove("show");
+        pendingForm = null;
+    }
+
+    document.querySelectorAll(".delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            pendingForm = form;
+            document.getElementById("modal-text").textContent = form.dataset.name;
+            modal.classList.add("show");
+        });
+    });
+
+    document.getElementById("cancelBtn").addEventListener("click", closeModal);
+    document.getElementById("confirmBtn").addEventListener("click", function () {
+        if (pendingForm) { pendingForm.submit(); }
+    });
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) { closeModal(); }
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { closeModal(); }
+    });
+</script>
+{% endblock %}
