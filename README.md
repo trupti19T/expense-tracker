@@ -2,6 +2,8 @@
 
 A personal finance tracker built with **Python, Flask, SQLAlchemy, PostgreSQL and vanilla HTML/CSS/JavaScript**. It keeps the original soft, pastel design and adds individual accounts so each person sees only their own financial records.
 
+**Live Demo:** [Open Expense Tracker](https://expense-tracker-oqwd.onrender.com)
+
 ## Features
 
 - Create an account, sign in and sign out
@@ -36,7 +38,7 @@ Python 3.12 is recommended.
 git clone https://github.com/trupti19T/expense-tracker.git
 cd expense-tracker
 py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\\.venv\\Scripts\\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python app.py
@@ -46,11 +48,11 @@ Open **http://127.0.0.1:5000**. The app creates its local SQLite database automa
 
 ## Deploy publicly
 
-**Deployment target:** [Create a Render Blueprint](https://dashboard.render.com/blueprints) from this repository. Select the `feature/multi-user-production` branch for the first deployment and apply the Blueprint. The updated `render.yaml` now provisions the web service and connects a PostgreSQL database automatically, so you do not need to paste a database URL manually. Render generates the app's `SECRET_KEY`.
+**Live website:** [https://expense-tracker-oqwd.onrender.com](https://expense-tracker-oqwd.onrender.com)
 
-After Render finishes deploying, copy the HTTPS `onrender.com` address from the service dashboard. That is the direct public website link to share. The repository's README will be updated with that exact address after the first successful deployment; no guessed or placeholder URL is published.
+The project is deployed on Render using a Blueprint. To create your own deployment, use [Render Blueprints](https://dashboard.render.com/blueprints), select this repository and the `feature/multi-user-production` branch for the initial deployment, then apply the Blueprint. The `render.yaml` file provisions the web service and connects a PostgreSQL database automatically. Render generates the app's `SECRET_KEY`.
 
-Then verify registration, sign-in, adding an expense, signing out, signing in again, and data separation using a second account. The `/health` endpoint is used by Render to check service health.
+The `/health` endpoint is used by Render to check service health.
 
 **Free-tier warning:** Render's free web service can sleep after 15 minutes without traffic, and its free PostgreSQL database expires after 30 days. It is suitable for a short demo, not long-term storage of real financial records. Upgrade the database or use a persistent paid database before relying on it. Back up any data you care about. See [Render's free-instance limitations](https://render.com/docs/free).
 
