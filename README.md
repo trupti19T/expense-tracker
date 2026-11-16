@@ -1,79 +1,106 @@
-# My Expense Tracker
+# Expense Tracker
 
-A pastel-themed web app to track expenses and income, see savings, and view weekly, monthly and yearly reports. Built with Python, Flask and SQL (SQLite).
+A personal finance tracker built with **Python, Flask, SQLAlchemy, PostgreSQL and vanilla HTML/CSS/JavaScript**. It keeps the original soft, pastel design and adds individual accounts so each person sees only their own financial records.
 
 ## Features
 
-- Add expenses (title, amount, category, date) and income (source, amount, date)
-- Delete expenses with a confirmation pop-up
-- Total spending and a category summary (SQL `GROUP BY`)
-- Savings for this week, this month and this year (income minus expenses)
-- Reports: weekly, monthly and yearly, with an income vs spending bar chart
+- Create an account, sign in and sign out
+- Passwords stored as secure password hashes (never stored as plain text)
+- Each expense and income row belongs to one account; database queries are scoped by the signed-in user's ID
+- Add and delete expenses with a confirmation dialog
+- Record income and calculate savings for the current week, month and year
+- Category-wise spending summary
+- Weekly, monthly and yearly income-versus-spending reports
 - Six themes: pink, green, blue, white, red and night
-- Responsive layout for phone, tablet and laptop
-- Input checks on the server: no future dates, no zero or negative amounts
+- Responsive layout, server-side input validation and CSRF protection
+- PostgreSQL for hosted deployment; SQLite for local development
+- Health endpoint at `/health`
 
-## Tech stack
+## Technology
 
-- **Backend:** Python, Flask, Jinja2 templates
-- **Database:** SQLite, with SQL for INSERT, SELECT, DELETE, SUM, COUNT, GROUP BY and date grouping
-- **Frontend:** HTML, CSS (variables for themes, media queries for responsive layout), vanilla JavaScript
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, Flask |
+| Authentication | Flask-Login, Werkzeug password hashing |
+| Database | Flask-SQLAlchemy, PostgreSQL (psycopg 3) |
+| Forms/security | Flask-WTF CSRF protection, secure session-cookie settings |
+| Frontend | Jinja2, HTML, CSS, vanilla JavaScript |
+| Production server | Gunicorn |
+| Hosting configuration | Render Blueprint |
 
-## How it works
+## Run locally (Windows PowerShell)
 
-1. The browser sends a request to a Flask route (for example `/add`).
-2. Flask validates the input and runs a parameterized SQL query (`?` placeholders, which prevent SQL injection).
-3. The result is passed to a Jinja2 template, which builds the page.
-4. Reports group rows by week, month or year in SQL, and Python merges income and expenses into one table and chart.
+Python 3.12 is recommended.
 
-## Project structure
-
-```
-expense-tracker/
-    app.py              Flask routes and validation
-    database.py         SQLite connection and all SQL queries
-    requirements.txt
-    static/
-        style.css       Themes, layout, animations
-        theme.js        Theme switcher, quotes, background drawings
-    templates/
-        base.html       Shared layout
-        landing.html    Intro page
-        index.html      Dashboard
-        add.html        Add expense form
-        add_income.html Add income form
-        report.html     Weekly / monthly / yearly reports
-```
-
-## Run it locally
-
-Requires Python 3.8 or newer.
-
-```
+```powershell
 git clone https://github.com/trupti19T/expense-tracker.git
 cd expense-tracker
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 python app.py
 ```
 
-Then open http://127.0.0.1:5000 in your browser. The database file is created automatically on the first run. The fonts load from Google Fonts, so an internet connection gives the best look.
+Open **http://127.0.0.1:5000**. The app creates its local SQLite database automatically. Create an account on the landing page to start.
+
+## Deploy publicly
+
+The repository includes a `render.yaml` Blueprint and a `Procfile`. The web service uses Gunicorn and expects a persistent PostgreSQL database.
+
+1. Create a PostgreSQL database with a provider such as Neon or Render. Keep its connection string private.
+2. In Render, choose **New → Blueprint**, connect this GitHub repository, and select the `feature/multi-user-production` branch while testing this version.
+3. When Render prompts for `DATABASE_URL`, paste the database's PostgreSQL connection string. Do not commit it to GitHub or put it in the README/video.
+4. The Blueprint generates `SECRET_KEY` for the deployed service. Keep it private.
+5. Deploy and wait for the service to become healthy. Open the Render-provided HTTPS URL and test registration, sign-in, adding an expense, signing out, and signing in again.
+6. Test with a second account to confirm that it cannot see the first account's entries.
+
+The service deliberately refuses to start in production without both `DATABASE_URL` and `SECRET_KEY`. This prevents accidentally deploying with a temporary local SQLite database or a known development secret.
+
+**Important:** a public URL is not available until the service has actually been deployed. Hosting providers may change their free-tier limits and database retention policies; check the provider's current terms before relying on a free database for long-term storage. Back up financial data you care about.
+
+## Data separation and legacy data
+
+The account-based version uses new tables named `app_users`, `app_expenses` and `app_income`. The old demo tables are not automatically imported or assigned to the first registered account. This avoids exposing earlier shared demo entries to a new user. Keep a backup of any old database file before replacing or deleting it.
 
 ## Screenshots
 
-(Screenshots will be added here.)
+Add genuine screenshots from the running application here after local testing (landing page, registration, dashboard, reports). No mock screenshots are used.
 
-## Current limitations and next steps
+## Project structure
 
-- Single user: there is no login yet, and data is stored in a local SQLite file
-- Planned: user accounts so each person sees only their own data, deployment with a hosted database, and CSV export
+```
+app.py                 Flask routes, authentication and validation
+database.py            SQLAlchemy models and user-scoped queries
+requirements.txt       Python dependencies
+Procfile               Gunicorn start command
+render.yaml            Render deployment blueprint
+runtime.txt            Python runtime
+static/
+  style.css            Existing themes and responsive design
+  theme.js             Theme switcher and page decorations
+templates/
+  base.html             Shared layout and account navigation
+  landing.html          Public landing page
+  register.html         Account creation
+  login.html            Sign-in
+  index.html            Personal dashboard
+  add.html              Add expense
+  add_income.html       Add income
+  report.html           Weekly/monthly/yearly reports
+  error.html            Friendly error page
+```
 
-## What I learned
+## What this project demonstrates
 
-- Building a Flask app with routes, templates and form handling
-- Writing SQL queries, including grouped results and date grouping
-- Validating input on the server and protecting queries with placeholders
-- Responsive design with CSS media queries, and a theme system with CSS variables
+- Designing a multi-user web application
+- Authentication, password hashing and session management
+- Relational database design with user ownership and foreign keys
+- CRUD operations and aggregation queries
+- Server-side validation and CSRF protection
+- Separating development and production database configuration
+- Preparing a Flask application for deployment with Gunicorn
 
 ## Author
 
-Trupti R
+**Trupti R**
