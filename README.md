@@ -46,18 +46,13 @@ Open **http://127.0.0.1:5000**. The app creates its local SQLite database automa
 
 ## Deploy publicly
 
-The repository includes a `render.yaml` Blueprint and a `Procfile`. The web service uses Gunicorn and expects a persistent PostgreSQL database.
+**Deployment target:** [Create a Render Blueprint](https://dashboard.render.com/blueprints) from this repository. Select the `feature/multi-user-production` branch for the first deployment and apply the Blueprint. The updated `render.yaml` now provisions the web service and connects a PostgreSQL database automatically, so you do not need to paste a database URL manually. Render generates the app's `SECRET_KEY`.
 
-1. Create a PostgreSQL database with a provider such as Neon or Render. Keep its connection string private.
-2. In Render, choose **New → Blueprint**, connect this GitHub repository, and select the `feature/multi-user-production` branch while testing this version.
-3. When Render prompts for `DATABASE_URL`, paste the database's PostgreSQL connection string. Do not commit it to GitHub or put it in the README/video.
-4. The Blueprint generates `SECRET_KEY` for the deployed service. Keep it private.
-5. Deploy and wait for the service to become healthy. Open the Render-provided HTTPS URL and test registration, sign-in, adding an expense, signing out, and signing in again.
-6. Test with a second account to confirm that it cannot see the first account's entries.
+After Render finishes deploying, copy the HTTPS `onrender.com` address from the service dashboard. That is the direct public website link to share. The repository's README will be updated with that exact address after the first successful deployment; no guessed or placeholder URL is published.
 
-The service deliberately refuses to start in production without both `DATABASE_URL` and `SECRET_KEY`. This prevents accidentally deploying with a temporary local SQLite database or a known development secret.
+Then verify registration, sign-in, adding an expense, signing out, signing in again, and data separation using a second account. The `/health` endpoint is used by Render to check service health.
 
-**Important:** a public URL is not available until the service has actually been deployed. Hosting providers may change their free-tier limits and database retention policies; check the provider's current terms before relying on a free database for long-term storage. Back up financial data you care about.
+**Free-tier warning:** Render's free web service can sleep after 15 minutes without traffic, and its free PostgreSQL database expires after 30 days. It is suitable for a short demo, not long-term storage of real financial records. Upgrade the database or use a persistent paid database before relying on it. Back up any data you care about. See [Render's free-instance limitations](https://render.com/docs/free).
 
 ## Data separation and legacy data
 
