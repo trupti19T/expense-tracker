@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong — Expense Tracker{% endblock %}
+{% block content %}
+<section class="card form-card">
+    <h1>Let's try that again</h1>
+    <p>{{ message }}</p>
+    <a class="btn" href="{{ url_for('landing') }}">Back to home</a>
+</section>
+{% endblock %}
