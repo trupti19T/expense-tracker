@@ -7,9 +7,9 @@
 
 <div class="actions">
     <div class="sticker big"><span id="thisMonth"></span></div>
-    <a class="btn" href="/add">+ Add Expense</a>
-    <a class="btn" href="/add-income">+ Add Income</a>
-    <a class="btn" href="/report">View Reports</a>
+    <a class="btn" href="{{ url_for('add') }}">+ Add Expense</a>
+    <a class="btn" href="{{ url_for('add_income_page') }}">+ Add Income</a>
+    <a class="btn" href="{{ url_for('report') }}">View Reports</a>
 </div>
 
 <div class="card">
@@ -70,9 +70,10 @@
                 <td>{{ e["category"] }}</td>
                 <td>{{ "%.2f"|format(e["amount"]) }}</td>
                 <td>
-                    <form method="POST" action="/delete/{{ e['id'] }}"
+                    <form method="POST" action="{{ url_for('delete', expense_id=e['id']) }}"
                           class="delete-form"
                           data-name="{{ e['title'] }} (₹{{ '%.2f'|format(e['amount']) }})">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="danger">Delete</button>
                     </form>
                 </td>

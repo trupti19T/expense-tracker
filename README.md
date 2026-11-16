@@ -1,79 +1,125 @@
-# My Expense Tracker
+# Expense Tracker
 
-A pastel-themed web app to track expenses and income, see savings, and view weekly, monthly and yearly reports. Built with Python, Flask and SQL (SQLite).
+A personal finance tracker built with **Python, Flask, SQLAlchemy, PostgreSQL and vanilla HTML/CSS/JavaScript**. It keeps the original soft, pastel design and adds individual accounts so each person sees only their own financial records.
+
+**Live Demo:** [Open Expense Tracker](https://expense-tracker-oqwd.onrender.com)
+
+**Current account-based version:** [Browse the feature branch](https://github.com/trupti19T/expense-tracker/tree/feature/multi-user-production) · [View the implementation pull request](https://github.com/trupti19T/expense-tracker/pull/1)
+
+## Screenshots
+
+### Application pages
+
+| Home page | Dashboard |
+|---|---|
+| ![Home page](docs/screenshots/home%20page.jpeg) | ![Dashboard](docs/screenshots/Dashboard%20page.jpeg) |
+
+| Expenses | Income |
+|---|---|
+| ![Expenses page](docs/screenshots/expenses%20page.jpeg) | ![Income page](docs/screenshots/income%20page.jpeg) |
+
+### Reports and themes
+
+![Reports page](docs/screenshots/report%20page.jpeg)
+
+The interface also includes multiple colour themes:
+
+| Green theme | Light blue theme | Dark blue theme |
+|---|---|---|
+| ![Green theme](docs/screenshots/green%20theme.jpeg) | ![Light blue theme](docs/screenshots/light%20blue%20theme.jpeg) | ![Dark blue theme](docs/screenshots/dark%20blue%20theme.jpeg) |
 
 ## Features
 
-- Add expenses (title, amount, category, date) and income (source, amount, date)
-- Delete expenses with a confirmation pop-up
-- Total spending and a category summary (SQL `GROUP BY`)
-- Savings for this week, this month and this year (income minus expenses)
-- Reports: weekly, monthly and yearly, with an income vs spending bar chart
+- Create an account, sign in and sign out
+- Passwords stored as secure password hashes (never stored as plain text)
+- Each expense and income row belongs to one account; database queries are scoped by the signed-in user's ID
+- Add and delete expenses with a confirmation dialog
+- Record income and calculate savings for the current week, month and year
+- Category-wise spending summary
+- Weekly, monthly and yearly income-versus-spending reports
 - Six themes: pink, green, blue, white, red and night
-- Responsive layout for phone, tablet and laptop
-- Input checks on the server: no future dates, no zero or negative amounts
+- Responsive layout, server-side input validation and CSRF protection
+- PostgreSQL for hosted deployment; SQLite for local development
+- Health endpoint at `/health`
 
-## Tech stack
+## Technology
 
-- **Backend:** Python, Flask, Jinja2 templates
-- **Database:** SQLite, with SQL for INSERT, SELECT, DELETE, SUM, COUNT, GROUP BY and date grouping
-- **Frontend:** HTML, CSS (variables for themes, media queries for responsive layout), vanilla JavaScript
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, Flask |
+| Authentication | Flask-Login, Werkzeug password hashing |
+| Database | Flask-SQLAlchemy, PostgreSQL (psycopg 3) |
+| Forms/security | Flask-WTF CSRF protection, secure session-cookie settings |
+| Frontend | Jinja2, HTML, CSS, vanilla JavaScript |
+| Production server | Gunicorn |
+| Hosting configuration | Render Blueprint |
 
-## How it works
+## Run locally (Windows PowerShell)
 
-1. The browser sends a request to a Flask route (for example `/add`).
-2. Flask validates the input and runs a parameterized SQL query (`?` placeholders, which prevent SQL injection).
-3. The result is passed to a Jinja2 template, which builds the page.
-4. Reports group rows by week, month or year in SQL, and Python merges income and expenses into one table and chart.
+These instructions are only for running the project on your own computer during development. The address `http://127.0.0.1:5000` is a local address and is not the public website link.
 
-## Project structure
+Python 3.12 is recommended.
 
-```
-expense-tracker/
-    app.py              Flask routes and validation
-    database.py         SQLite connection and all SQL queries
-    requirements.txt
-    static/
-        style.css       Themes, layout, animations
-        theme.js        Theme switcher, quotes, background drawings
-    templates/
-        base.html       Shared layout
-        landing.html    Intro page
-        index.html      Dashboard
-        add.html        Add expense form
-        add_income.html Add income form
-        report.html     Weekly / monthly / yearly reports
-```
-
-## Run it locally
-
-Requires Python 3.8 or newer.
-
-```
+```powershell
 git clone https://github.com/trupti19T/expense-tracker.git
 cd expense-tracker
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 python app.py
 ```
 
-Then open http://127.0.0.1:5000 in your browser. The database file is created automatically on the first run. The fonts load from Google Fonts, so an internet connection gives the best look.
+After starting the app, open **http://127.0.0.1:5000** on the same computer. The app creates its local SQLite database automatically. Create an account on the landing page to start.
 
-## Screenshots
+## Deploy publicly
 
-(Screenshots will be added here.)
+**Live website:** [https://expense-tracker-oqwd.onrender.com](https://expense-tracker-oqwd.onrender.com)
 
-## Current limitations and next steps
+The project is deployed on Render using a Blueprint. To create your own deployment, use [Render Blueprints](https://dashboard.render.com/blueprints), select this repository and the `feature/multi-user-production` branch for the initial deployment, then apply the Blueprint. The `render.yaml` file provisions the web service and connects a PostgreSQL database automatically. Render generates the app's `SECRET_KEY`.
 
-- Single user: there is no login yet, and data is stored in a local SQLite file
-- Planned: user accounts so each person sees only their own data, deployment with a hosted database, and CSV export
+The `/health` endpoint is used by Render to check service health.
 
-## What I learned
+**Free-tier warning:** Render's free web service can sleep after 15 minutes without traffic, and its free PostgreSQL database expires after 30 days. It is suitable for a short demo, not long-term storage of real financial records. Upgrade the database or use a persistent paid database before relying on it. Back up any data you care about. See [Render's free-instance limitations](https://render.com/docs/free).
 
-- Building a Flask app with routes, templates and form handling
-- Writing SQL queries, including grouped results and date grouping
-- Validating input on the server and protecting queries with placeholders
-- Responsive design with CSS media queries, and a theme system with CSS variables
+## Data separation and legacy data
+
+The account-based version uses new tables named `app_users`, `app_expenses` and `app_income`. The old demo tables are not automatically imported or assigned to the first registered account. This avoids exposing earlier shared demo entries to a new user. Keep a backup of any old database file before replacing or deleting it.
+
+## Project structure
+
+```
+app.py                 Flask routes, authentication and validation
+database.py            SQLAlchemy models and user-scoped queries
+requirements.txt       Python dependencies
+Procfile               Gunicorn start command
+render.yaml            Render deployment blueprint
+runtime.txt            Python runtime
+static/
+  style.css            Existing themes and responsive design
+  theme.js             Theme switcher and page decorations
+templates/
+  base.html             Shared layout and account navigation
+  landing.html          Public landing page
+  register.html         Account creation
+  login.html            Sign-in
+  index.html            Personal dashboard
+  add.html              Add expense
+  add_income.html       Add income
+  report.html           Weekly/monthly/yearly reports
+  error.html            Friendly error page
+```
+
+## What this project demonstrates
+
+- Designing a multi-user web application
+- Authentication, password hashing and session management
+- Relational database design with user ownership and foreign keys
+- CRUD operations and aggregation queries
+- Server-side validation and CSRF protection
+- Separating development and production database configuration
+- Preparing a Flask application for deployment with Gunicorn
 
 ## Author
 
-Trupti R
+**Trupti R**

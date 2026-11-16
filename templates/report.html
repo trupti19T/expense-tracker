@@ -6,9 +6,9 @@
 <div class="divider">♥</div>
 
 <div class="tabs">
-    <a href="/report?view=week" class="{{ 'on' if view == 'week' }}">Weekly</a>
-    <a href="/report?view=month" class="{{ 'on' if view == 'month' }}">Monthly</a>
-    <a href="/report?view=year" class="{{ 'on' if view == 'year' }}">Yearly</a>
+    <a href="{{ url_for('report', view='week') }}" class="{{ 'on' if view == 'week' }}">Weekly</a>
+    <a href="{{ url_for('report', view='month') }}" class="{{ 'on' if view == 'month' }}">Monthly</a>
+    <a href="{{ url_for('report', view='year') }}" class="{{ 'on' if view == 'year' }}">Yearly</a>
 </div>
 
 {% if rows %}
@@ -55,7 +55,7 @@
 {% else %}
 <div class="card">
     <p>No data yet. Add some expenses and income, and your report will appear here.</p>
-    <a class="btn" href="/add">+ Add Expense</a>
+    <a class="btn" href="{{ url_for('add') }}">+ Add Expense</a>
 </div>
 {% endif %}
 {% endblock %}
