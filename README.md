@@ -32,6 +32,8 @@ A personal finance tracker built with **Python, Flask, SQLAlchemy, PostgreSQL an
 
 ## Run locally (Windows PowerShell)
 
+These instructions are only for running the project on your own computer during development. The address `http://127.0.0.1:5000` is a local address and is not the public website link.
+
 Python 3.12 is recommended.
 
 ```powershell
@@ -44,7 +46,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open **http://127.0.0.1:5000**. The app creates its local SQLite database automatically. Create an account on the landing page to start.
+After starting the app, open **http://127.0.0.1:5000** on the same computer. The app creates its local SQLite database automatically. Create an account on the landing page to start.
 
 ## Deploy publicly
 
@@ -59,10 +61,6 @@ The `/health` endpoint is used by Render to check service health.
 ## Data separation and legacy data
 
 The account-based version uses new tables named `app_users`, `app_expenses` and `app_income`. The old demo tables are not automatically imported or assigned to the first registered account. This avoids exposing earlier shared demo entries to a new user. Keep a backup of any old database file before replacing or deleting it.
-
-## Screenshots
-
-Add genuine screenshots from the running application here after local testing (landing page, registration, dashboard, reports). No mock screenshots are used.
 
 ## Project structure
 
