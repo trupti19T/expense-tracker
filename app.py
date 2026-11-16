@@ -18,11 +18,14 @@ from database import (
 app = Flask(__name__)
 is_production = os.environ.get("FLASK_ENV") == "production" or os.environ.get("RENDER") == "true"
 secret_key = os.environ.get("SECRET_KEY")
+database_url = os.environ.get("DATABASE_URL")
+if is_production and not database_url:
+    raise RuntimeError("Set DATABASE_URL to a persistent PostgreSQL database before starting in production.")
 if is_production and not secret_key:
     raise RuntimeError("Set a strong SECRET_KEY environment variable before starting in production.")
 app.config.update(
     SECRET_KEY=secret_key or "local-development-key-change-before-deploy",
-    SQLALCHEMY_DATABASE_URI=os.environ.get("DATABASE_URL", "sqlite:///expenses_local.db").replace(
+    SQLALCHEMY_DATABASE_URI=(database_url or "sqlite:///expenses_local.db").replace(
         "postgres://", "postgresql+psycopg://", 1
     ),
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
