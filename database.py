@@ -1,138 +1,147 @@
-import sqlite3
+from collections import defaultdict
+from datetime import date, datetime, timedelta
 
-DB_NAME = "expenses.db"
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+
+db = SQLAlchemy()
 
 
-def get_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
+class User(UserMixin, db.Model):
+    __tablename__ = "app_users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(254), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class Expense(db.Model):
+    __tablename__ = "app_expenses"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("app_users.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = db.Column(db.String(120), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    category = db.Column(db.String(30), nullable=False)
+    expense_date = db.Column(db.String(10), nullable=False, index=True)
+
+
+class Income(db.Model):
+    __tablename__ = "app_income"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("app_users.id", ondelete="CASCADE"), nullable=False, index=True)
+    source = db.Column(db.String(120), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    income_date = db.Column(db.String(10), nullable=False, index=True)
 
 
 def init_db():
-    conn = get_connection()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS expenses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            amount REAL NOT NULL,
-            category TEXT NOT NULL,
-            expense_date TEXT NOT NULL
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS income (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            source TEXT NOT NULL,
-            amount REAL NOT NULL,
-            income_date TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-def add_expense(title, amount, category, expense_date):
-    conn = get_connection()
-    conn.execute(
-        "INSERT INTO expenses (title, amount, category, expense_date) VALUES (?, ?, ?, ?)",
-        (title, amount, category, expense_date),
-    )
-    conn.commit()
-    conn.close()
+    db.create_all()
 
 
-def get_all_expenses():
-    conn = get_connection()
-    rows = conn.execute(
-        "SELECT * FROM expenses ORDER BY expense_date DESC, id DESC"
-    ).fetchall()
-    conn.close()
-    return rows
+def add_expense(user_id, title, amount, category, expense_date):
+    db.session.add(Expense(
+        user_id=user_id, title=title, amount=amount,
+        category=category, expense_date=expense_date,
+    ))
+    db.session.commit()
 
 
-def get_total():
-    conn = get_connection()
-    row = conn.execute("SELECT SUM(amount) AS total FROM expenses").fetchone()
-    conn.close()
-    return row["total"] or 0
+def get_all_expenses(user_id):
+    rows = Expense.query.filter_by(user_id=user_id).order_by(
+        Expense.expense_date.desc(), Expense.id.desc()
+    ).all()
+    return [{
+        "id": row.id,
+        "title": row.title,
+        "amount": float(row.amount),
+        "category": row.category,
+        "expense_date": row.expense_date,
+    } for row in rows]
 
-def get_category_summary():
-    conn = get_connection()
-    rows = conn.execute(
-        """
-        SELECT category, SUM(amount) AS total, COUNT(*) AS count
-        FROM expenses
-        GROUP BY category
-        ORDER BY total DESC
-        """
-    ).fetchall()
-    conn.close()
-    return rows
 
-def delete_expense(expense_id):
-    conn = get_connection()
-    conn.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
-    conn.commit()
-    conn.close()
+def get_total(user_id):
+    total = db.session.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
+        Expense.user_id == user_id
+    ).scalar()
+    return float(total)
 
-def add_income(source, amount, income_date):
-    conn = get_connection()
-    conn.execute(
-        "INSERT INTO income (source, amount, income_date) VALUES (?, ?, ?)",
-        (source, amount, income_date),
-    )
-    conn.commit()
-    conn.close()
 
-def get_savings(start_date):
-    conn = get_connection()
-    income = conn.execute(
-        "SELECT COALESCE(SUM(amount), 0) AS t FROM income WHERE income_date >= ?",
-        (start_date,),
-    ).fetchone()["t"]
-    spent = conn.execute(
-        "SELECT COALESCE(SUM(amount), 0) AS t FROM expenses WHERE expense_date >= ?",
-        (start_date,),
-    ).fetchone()["t"]
-    conn.close()
-    return {"income": income, "spent": spent, "saved": income - spent}
+def get_category_summary(user_id):
+    rows = db.session.query(
+        Expense.category,
+        func.sum(Expense.amount).label("total"),
+        func.count(Expense.id).label("count"),
+    ).filter(Expense.user_id == user_id).group_by(
+        Expense.category
+    ).order_by(func.sum(Expense.amount).desc()).all()
+    return [{
+        "category": row.category,
+        "total": float(row.total),
+        "count": row.count,
+    } for row in rows]
 
-def get_report(view):
-    if view == "week":
-        e_key = "date(expense_date, 'weekday 0', '-6 days')"
-        i_key = "date(income_date, 'weekday 0', '-6 days')"
-        limit = 8
-    elif view == "year":
-        e_key = "strftime('%Y', expense_date)"
-        i_key = "strftime('%Y', income_date)"
-        limit = 5
-    else:
-        e_key = "strftime('%Y-%m', expense_date)"
-        i_key = "strftime('%Y-%m', income_date)"
-        limit = 12
 
-    conn = get_connection()
-    spent_rows = conn.execute(
-        f"SELECT {e_key} AS period, SUM(amount) AS total FROM expenses GROUP BY period"
-    ).fetchall()
-    income_rows = conn.execute(
-        f"SELECT {i_key} AS period, SUM(amount) AS total FROM income GROUP BY period"
-    ).fetchall()
-    conn.close()
+def delete_expense(user_id, expense_id):
+    row = Expense.query.filter_by(id=expense_id, user_id=user_id).first()
+    if row is None:
+        return False
+    db.session.delete(row)
+    db.session.commit()
+    return True
 
-    data = {}
-    for r in spent_rows:
-        data.setdefault(r["period"], {"income": 0, "spent": 0})["spent"] = r["total"]
-    for r in income_rows:
-        data.setdefault(r["period"], {"income": 0, "spent": 0})["income"] = r["total"]
 
-    periods = sorted(data.keys())[-limit:]
-    return [
-        {
-            "period": p,
-            "income": data[p]["income"],
-            "spent": data[p]["spent"],
-            "saved": data[p]["income"] - data[p]["spent"],
-        }
-        for p in periods
-    ]    
+def add_income(user_id, source, amount, income_date):
+    db.session.add(Income(
+        user_id=user_id, source=source, amount=amount, income_date=income_date
+    ))
+    db.session.commit()
+
+
+def get_savings(user_id, start_date):
+    income = db.session.query(func.coalesce(func.sum(Income.amount), 0)).filter(
+        Income.user_id == user_id, Income.income_date >= start_date
+    ).scalar()
+    spent = db.session.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
+        Expense.user_id == user_id, Expense.expense_date >= start_date
+    ).scalar()
+    income_value, spent_value = float(income), float(spent)
+    return {
+        "income": income_value,
+        "spent": spent_value,
+        "saved": income_value - spent_value,
+    }
+
+
+def get_report(user_id, view):
+    if view not in {"week", "month", "year"}:
+        view = "month"
+    expenses = Expense.query.filter_by(user_id=user_id).all()
+    incomes = Income.query.filter_by(user_id=user_id).all()
+    grouped = defaultdict(lambda: {"income": 0.0, "spent": 0.0})
+
+    def period_for(value):
+        parsed = date.fromisoformat(value)
+        if view == "week":
+            return (parsed - timedelta(days=parsed.weekday())).isoformat()
+        if view == "year":
+            return parsed.strftime("%Y")
+        return parsed.strftime("%Y-%m")
+
+    for row in expenses:
+        grouped[period_for(row.expense_date)]["spent"] += float(row.amount)
+    for row in incomes:
+        grouped[period_for(row.income_date)]["income"] += float(row.amount)
+
+    limit = {"week": 8, "month": 12, "year": 5}[view]
+    periods = sorted(grouped)[-limit:]
+    return [{
+        "period": period,
+        "income": grouped[period]["income"],
+        "spent": grouped[period]["spent"],
+        "saved": grouped[period]["income"] - grouped[period]["spent"],
+    } for period in periods]
