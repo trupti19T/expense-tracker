@@ -4,6 +4,30 @@ A personal finance tracker built with **Python, Flask, SQLAlchemy, PostgreSQL an
 
 **Live Demo:** [Open Expense Tracker](https://expense-tracker-oqwd.onrender.com)
 
+**Current account-based version:** [Browse the feature branch](https://github.com/trupti19T/expense-tracker/tree/feature/multi-user-production) · [View the implementation pull request](https://github.com/trupti19T/expense-tracker/pull/1)
+
+## Screenshots
+
+### Application pages
+
+| Home page | Dashboard |
+|---|---|
+| ![Home page](docs/screenshots/home%20page.jpeg) | ![Dashboard](docs/screenshots/Dashboard%20page.jpeg) |
+
+| Expenses | Income |
+|---|---|
+| ![Expenses page](docs/screenshots/expenses%20page.jpeg) | ![Income page](docs/screenshots/income%20page.jpeg) |
+
+### Reports and themes
+
+![Reports page](docs/screenshots/report%20page.jpeg)
+
+The interface also includes multiple colour themes:
+
+| Green theme | Light blue theme | Dark blue theme |
+|---|---|---|
+| ![Green theme](docs/screenshots/green%20theme.jpeg) | ![Light blue theme](docs/screenshots/light%20blue%20theme.jpeg) | ![Dark blue theme](docs/screenshots/dark%20blue%20theme.jpeg) |
+
 ## Features
 
 - Create an account, sign in and sign out
@@ -40,7 +64,7 @@ Python 3.12 is recommended.
 git clone https://github.com/trupti19T/expense-tracker.git
 cd expense-tracker
 py -3.12 -m venv .venv
-.\\.venv\\Scripts\\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python app.py
