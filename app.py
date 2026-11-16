@@ -11,7 +11,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from database import (
-    User, add_expense, add_income, delete_expense, get_all_expenses,
+    db, User, add_expense, add_income, delete_expense, get_all_expenses,
     get_category_summary, get_report, get_savings, get_total, init_db,
 )
 
@@ -37,6 +37,7 @@ app.config.update(
 if is_production:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
+db.init_app(app)
 csrf = CSRFProtect(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -109,7 +110,6 @@ def register():
             error = "An account with this email already exists. Please sign in instead."
         else:
             user = User(name=name, email=email, password_hash=generate_password_hash(password))
-            from database import db
             db.session.add(user)
             db.session.commit()
             login_user(user)
@@ -168,6 +168,14 @@ def dashboard():
     )
 
 
+def valid_past_or_today(value, today):
+    try:
+        parsed = date.fromisoformat(value)
+        return parsed.isoformat() == value and value <= today
+    except (TypeError, ValueError):
+        return False
+
+
 def parse_amount(raw):
     try:
         amount = Decimal(raw).quantize(Decimal("0.01"))
@@ -194,7 +202,7 @@ def add():
             error = "Enter an amount greater than zero."
         elif category not in {"Food", "Travel", "Shopping", "Bills", "Other"}:
             error = "Please choose a valid category."
-        elif not re.fullmatch(r"\d{4}-\d{2}-\d{2}", expense_date) or expense_date > today:
+        elif not valid_past_or_today(expense_date, today):
             error = "Please choose a valid date that is not in the future."
         else:
             add_expense(current_user.id, title, amount, category, expense_date)
@@ -216,7 +224,7 @@ def add_income_page():
             error = "Please enter an income source (up to 120 characters)."
         elif amount is None:
             error = "Enter an amount greater than zero."
-        elif not re.fullmatch(r"\d{4}-\d{2}-\d{2}", income_date) or income_date > today:
+        elif not valid_past_or_today(income_date, today):
             error = "Please choose a valid date that is not in the future."
         else:
             add_income(current_user.id, source, amount, income_date)
