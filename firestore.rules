@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInAs(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if signedInAs(uid);
+      allow create, update: if signedInAs(uid)
+        && request.resource.data.keys().hasOnly(['name', 'email', 'createdAt', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.email == request.auth.token.email;
+      allow delete: if false;
+
+      match /expenses/{expenseId} {
+        allow read: if signedInAs(uid);
+        allow create: if signedInAs(uid)
+          && request.resource.data.keys().hasOnly(['title', 'amount', 'category', 'expenseDate', 'createdAt'])
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.amount <= 9999999999.99
+          && request.resource.data.category in ['Food', 'Travel', 'Shopping', 'Bills', 'Other']
+          && request.resource.data.expenseDate is string
+          && request.resource.data.expenseDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+        allow update: if signedInAs(uid)
+          && request.resource.data.keys().hasOnly(['title', 'amount', 'category', 'expenseDate', 'createdAt'])
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.amount <= 9999999999.99
+          && request.resource.data.category in ['Food', 'Travel', 'Shopping', 'Bills', 'Other']
+          && request.resource.data.expenseDate is string
+          && request.resource.data.expenseDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+        allow delete: if signedInAs(uid);
+      }
+
+      match /income/{incomeId} {
+        allow read: if signedInAs(uid);
+        allow create: if signedInAs(uid)
+          && request.resource.data.keys().hasOnly(['source', 'amount', 'incomeDate', 'createdAt'])
+          && request.resource.data.source is string
+          && request.resource.data.source.size() > 0
+          && request.resource.data.source.size() <= 120
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.amount <= 9999999999.99
+          && request.resource.data.incomeDate is string
+          && request.resource.data.incomeDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+        allow update: if signedInAs(uid)
+          && request.resource.data.keys().hasOnly(['source', 'amount', 'incomeDate', 'createdAt'])
+          && request.resource.data.source is string
+          && request.resource.data.source.size() > 0
+          && request.resource.data.source.size() <= 120
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.amount <= 9999999999.99
+          && request.resource.data.incomeDate is string
+          && request.resource.data.incomeDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+        allow delete: if signedInAs(uid);
+      }
+    }
+  }
+}

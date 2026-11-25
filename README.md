@@ -1,125 +1,68 @@
 # Expense Tracker
 
-A personal finance tracker built with **Python, Flask, SQLAlchemy, PostgreSQL and vanilla HTML/CSS/JavaScript**. It keeps the original soft, pastel design and adds individual accounts so each person sees only their own financial records.
+A multi-user personal finance web application with a soft pastel interface, six selectable themes, private accounts, expense and income tracking, savings summaries, and weekly/monthly/yearly reports.
 
-**Live Demo:** [Open Expense Tracker](https://expense-tracker-oqwd.onrender.com)
+**Author:** Trupti R
 
-**Current account-based version:** [Browse the feature branch](https://github.com/trupti19T/expense-tracker/tree/feature/multi-user-production) · [View the implementation pull request](https://github.com/trupti19T/expense-tracker/pull/1)
+## Live demo
 
-## Screenshots
-
-### Application pages
-
-| Home page | Dashboard |
-|---|---|
-| ![Home page](docs/screenshots/home%20page.jpeg) | ![Dashboard](docs/screenshots/Dashboard%20page.jpeg) |
-
-| Expenses | Income |
-|---|---|
-| ![Expenses page](docs/screenshots/expenses%20page.jpeg) | ![Income page](docs/screenshots/income%20page.jpeg) |
-
-### Reports and themes
-
-![Reports page](docs/screenshots/report%20page.jpeg)
-
-The interface also includes multiple colour themes:
-
-| Green theme | Light blue theme | Dark blue theme |
-|---|---|---|
-| ![Green theme](docs/screenshots/green%20theme.jpeg) | ![Light blue theme](docs/screenshots/light%20blue%20theme.jpeg) | ![Dark blue theme](docs/screenshots/dark%20blue%20theme.jpeg) |
+The Firebase Hosting URL will be added here after a Firebase project is configured and the first production deployment succeeds. A live URL is deliberately not listed before it has been verified.
 
 ## Features
 
-- Create an account, sign in and sign out
-- Passwords stored as secure password hashes (never stored as plain text)
-- Each expense and income row belongs to one account; database queries are scoped by the signed-in user's ID
-- Add and delete expenses with a confirmation dialog
-- Record income and calculate savings for the current week, month and year
+- Public landing page and account registration/sign-in
+- Email/password authentication through Firebase Authentication
+- User-specific expenses and income stored in Cloud Firestore
+- Firestore Security Rules enforce account ownership
+- Add and delete expenses with confirmation
+- Record income and calculate weekly, monthly and yearly savings
 - Category-wise spending summary
 - Weekly, monthly and yearly income-versus-spending reports
 - Six themes: pink, green, blue, white, red and night
-- Responsive layout, server-side input validation and CSRF protection
-- PostgreSQL for hosted deployment; SQLite for local development
-- Health endpoint at `/health`
+- Responsive design and browser-side form validation
 
 ## Technology
 
 | Layer | Technology |
 |---|---|
-| Backend | Python 3.12, Flask |
-| Authentication | Flask-Login, Werkzeug password hashing |
-| Database | Flask-SQLAlchemy, PostgreSQL (psycopg 3) |
-| Forms/security | Flask-WTF CSRF protection, secure session-cookie settings |
-| Frontend | Jinja2, HTML, CSS, vanilla JavaScript |
-| Production server | Gunicorn |
-| Hosting configuration | Render Blueprint |
+| Hosting | Firebase Hosting (static site) |
+| Authentication | Firebase Authentication |
+| Database | Cloud Firestore |
+| Frontend | HTML, existing CSS, vanilla JavaScript (ES modules) |
+| Security | Firestore Security Rules; Firebase Auth |
+| Free plan | Firebase Spark (no billing account required) |
 
-## Run locally (Windows PowerShell)
+The application does not require an always-running Flask server, PostgreSQL instance, Cloud Functions or a Node backend.
 
-These instructions are only for running the project on your own computer during development. The address `http://127.0.0.1:5000` is a local address and is not the public website link.
+## Run locally
 
-Python 3.12 is recommended.
+The frontend is static, but Firebase Auth requires an authorized web origin. For local development, use a local static server (for example, VS Code Live Server) and add its origin to Firebase Authentication > Settings > Authorized domains.
 
-```powershell
-git clone https://github.com/trupti19T/expense-tracker.git
-cd expense-tracker
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-python app.py
-```
+Before the app can connect to Firebase, configure `public/firebase-config.js` using your Firebase web app configuration. See [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
 
-After starting the app, open **http://127.0.0.1:5000** on the same computer. The app creates its local SQLite database automatically. Create an account on the landing page to start.
+## Deploy
 
-## Deploy publicly
+1. Create a Firebase project on the Spark plan.
+2. Enable Email/Password sign-in.
+3. Create a Cloud Firestore database.
+4. Configure `public/firebase-config.js`.
+5. Install Firebase CLI and select the project with `firebase use --add`.
+6. Deploy rules and hosting with `firebase deploy --only firestore:rules,hosting`.
 
-**Live website:** [https://expense-tracker-oqwd.onrender.com](https://expense-tracker-oqwd.onrender.com)
+Detailed instructions and verification steps: [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
 
-The project is deployed on Render using a Blueprint. To create your own deployment, use [Render Blueprints](https://dashboard.render.com/blueprints), select this repository and the `feature/multi-user-production` branch for the initial deployment, then apply the Blueprint. The `render.yaml` file provisions the web service and connects a PostgreSQL database automatically. Render generates the app's `SECRET_KEY`.
+## Security notes
 
-The `/health` endpoint is used by Render to check service health.
+- The Firebase web configuration is public and is not a secret.
+- Never commit service-account JSON, private keys, passwords, or admin credentials.
+- Firestore rules scope every user record to the matching authenticated UID.
+- Deploy and verify the rules before inviting public users.
+- This is a portfolio/demo application, not a bank-grade financial records system. Avoid storing sensitive financial account credentials or payment-card data.
 
-**Free-tier warning:** Render's free web service can sleep after 15 minutes without traffic, and its free PostgreSQL database expires after 30 days. It is suitable for a short demo, not long-term storage of real financial records. Upgrade the database or use a persistent paid database before relying on it. Back up any data you care about. See [Render's free-instance limitations](https://render.com/docs/free).
+## Repository history
 
-## Data separation and legacy data
+The previous Flask + SQLAlchemy + PostgreSQL implementation and Render configuration are retained in this branch as migration history. The Firebase Hosting configuration serves only the static `public/` directory. The old Render demo is not the production deployment target.
 
-The account-based version uses new tables named `app_users`, `app_expenses` and `app_income`. The old demo tables are not automatically imported or assigned to the first registered account. This avoids exposing earlier shared demo entries to a new user. Keep a backup of any old database file before replacing or deleting it.
+## Screenshots
 
-## Project structure
-
-```
-app.py                 Flask routes, authentication and validation
-database.py            SQLAlchemy models and user-scoped queries
-requirements.txt       Python dependencies
-Procfile               Gunicorn start command
-render.yaml            Render deployment blueprint
-runtime.txt            Python runtime
-static/
-  style.css            Existing themes and responsive design
-  theme.js             Theme switcher and page decorations
-templates/
-  base.html             Shared layout and account navigation
-  landing.html          Public landing page
-  register.html         Account creation
-  login.html            Sign-in
-  index.html            Personal dashboard
-  add.html              Add expense
-  add_income.html       Add income
-  report.html           Weekly/monthly/yearly reports
-  error.html            Friendly error page
-```
-
-## What this project demonstrates
-
-- Designing a multi-user web application
-- Authentication, password hashing and session management
-- Relational database design with user ownership and foreign keys
-- CRUD operations and aggregation queries
-- Server-side validation and CSRF protection
-- Separating development and production database configuration
-- Preparing a Flask application for deployment with Gunicorn
-
-## Author
-
-**Trupti R**
+Existing design screenshots are retained in `docs/screenshots/`. The original theme stylesheet remains at `static/style.css` and the existing theme switcher remains at `static/theme.js`.
