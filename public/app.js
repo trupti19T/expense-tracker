@@ -24,10 +24,8 @@ const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c =>
 const money = value => Number(value || 0).toLocaleString("en-IN", {
   minimumFractionDigits: 2, maximumFractionDigits: 2
 });
-const todayISO = () => {
-  const d = new Date();
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-");
-};
+const localISO = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-");
+const todayISO = () => localISO(new Date());
 const dateDMY = value => {
   if (!value) return "";
   const [y,m,d] = value.split("-");
@@ -43,10 +41,11 @@ const route = () => (location.hash.replace(/^#\/?/,"") || "home").split("?");
 
 function renderNav() {
   if (currentUser) {
+    const activePath = route()[0];
     nav.innerHTML = [
       ["home","Home"],["dashboard","Dashboard"],["add","Add Expense"],
       ["add-income","Add Income"],["report","Reports"]
-    ].map(([p,t]) => '<a href="#/'+p+'">'+t+'</a>').join("");
+    ].map(([p,t]) => '<a class="'+(activePath===p?"active":"") '" href="#/'+p+'">'+t+'</a>').join("");
     tools.innerHTML = '<span class="welcome-user">Hi, '+escapeHtml((currentUser.displayName || currentUser.email || "there").split(" ")[0])+'</span><button class="ghost small-button" id="sign-out">Sign out</button>';
     document.getElementById("sign-out").addEventListener("click", async () => {
       try { await signOut(auth); go("/"); setNotice("You have been signed out safely."); }
@@ -175,7 +174,7 @@ function periodStart(kind) {
   if (kind==="week") d.setDate(d.getDate()-((d.getDay()+6)%7));
   if (kind==="month") d.setDate(1);
   if (kind==="year") { d.setMonth(0,1); }
-  return d.toISOString().slice(0,10);
+  return localISO(d);
 }
 function savings(kind) {
   const start = periodStart(kind);
@@ -203,7 +202,7 @@ function dashboard() {
     pendingDelete=btn.dataset.id; document.getElementById("modal-text").textContent=btn.dataset.name; modal.classList.add("show");
   }));
 }
-function startOfWeek(date) { const d=new Date(date+"T00:00:00"); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d.toISOString().slice(0,10); }
+function startOfWeek(date) { const d=new Date(date+"T00:00:00"); d.setDate(d.getDate()-((d.getDay()+6)%7)); return localISO(d); }
 function reportRows(view) {
   const groups = {};
   const keyFor = value => view==="week" ? startOfWeek(value) : view==="year" ? value.slice(0,4) : value.slice(0,7);
