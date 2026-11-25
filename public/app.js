@@ -45,7 +45,7 @@ function renderNav() {
     nav.innerHTML = [
       ["home","Home"],["dashboard","Dashboard"],["add","Add Expense"],
       ["add-income","Add Income"],["report","Reports"]
-    ].map(([p,t]) => '<a class="'+(activePath===p?"active":"") '" href="#/'+p+'">'+t+'</a>').join("");
+    ].map(([p,t]) => '<a class="'+(activePath===p?"active":"")+'" href="#/'+p+'">'+t+'</a>').join("");
     tools.innerHTML = '<span class="welcome-user">Hi, '+escapeHtml((currentUser.displayName || currentUser.email || "there").split(" ")[0])+'</span><button class="ghost small-button" id="sign-out">Sign out</button>';
     document.getElementById("sign-out").addEventListener("click", async () => {
       try { await signOut(auth); go("/"); setNotice("You have been signed out safely."); }
