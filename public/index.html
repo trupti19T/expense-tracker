@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A calm, personal space to understand your spending and savings.">
+  <meta name="theme-color" content="#fff6f7">
+  <title>My Expense Tracker — A little more clarity, every day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
+  <script>
+    try { document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "pink"); }
+    catch (_) { document.documentElement.setAttribute("data-theme", "pink"); }
+  </script>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .account-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .account-tools form{margin:0}
+    .small-button{padding:7px 16px;font-size:13px}
+    .eyebrow{color:var(--muted);font-size:12px;letter-spacing:2px;font-weight:700}
+    .privacy-note,.hint,small{color:var(--muted)}
+    .hero-actions{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .text-link{font-size:14px}
+    .form-card{max-width:560px;margin:22px auto}
+    .form-card form p{margin:18px 0}
+    .form-card input,.form-card select{display:block;margin-top:7px}
+    .form-card button{margin-top:8px}
+    .flash-stack{margin:12px 0}
+    .flash{padding:10px 14px;border-radius:14px;background:#e8f5e9;color:#245b34}
+    .flash.error{background:#ffe4e8;color:#9b1c31}
+    .empty-state{color:var(--muted);padding:12px 0}
+    .loading{max-width:480px;margin:10vh auto;text-align:center}
+    .loading .total{font-size:42px}
+    button:disabled{opacity:.6;cursor:wait}
+    .table-wrap form{margin:0}
+    .report-period{font-size:12px;color:var(--muted)}
+    @media(max-width:700px){.account-tools{justify-content:center}}
+  </style>
+</head>
+<body>
+<div id="sky"></div>
+<div class="container">
+  <header class="topbar">
+    <a class="logo" href="#/">Expense Tracker</a>
+    <nav id="main-nav" aria-label="Main navigation"></nav>
+    <div class="account-tools" id="account-tools"></div>
+    <div class="themes" aria-label="Choose a color theme">
+      <button type="button" class="dot" data-theme="pink" title="Pink blossoms"></button>
+      <button type="button" class="dot" data-theme="green" title="Green leaves"></button>
+      <button type="button" class="dot" data-theme="blue" title="Blue sky"></button>
+      <button type="button" class="dot" data-theme="white" title="Water and wind"></button>
+      <button type="button" class="dot" data-theme="red" title="Fire and roses"></button>
+      <button type="button" class="dot" data-theme="black" title="Night sky"></button>
+    </div>
+  </header>
+  <div class="quote" id="quote"></div>
+  <div id="notice" aria-live="polite"></div>
+  <main id="app-root">
+    <section class="card loading">
+      <h1>My Expense Tracker</h1>
+      <p>Preparing your little money space…</p>
+    </section>
+  </main>
+</div>
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <h3 id="modal-title">Delete this expense?</h3>
+    <p id="modal-text"></p>
+    <div class="modal-actions">
+      <button type="button" class="ghost" id="cancel-delete">Cancel</button>
+      <button type="button" class="danger" id="confirm-delete">Yes, delete</button>
+    </div>
+  </div>
+</div>
+<script src="/static/theme.js"></script>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

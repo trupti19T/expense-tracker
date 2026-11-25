@@ -1,79 +1,68 @@
-# My Expense Tracker
+# Expense Tracker
 
-A pastel-themed web app to track expenses and income, see savings, and view weekly, monthly and yearly reports. Built with Python, Flask and SQL (SQLite).
+A multi-user personal finance web application with a soft pastel interface, six selectable themes, private accounts, expense and income tracking, savings summaries, and weekly/monthly/yearly reports.
+
+**Author:** Trupti R
+
+## Live demo
+
+The Firebase Hosting URL will be added here after a Firebase project is configured and the first production deployment succeeds. A live URL is deliberately not listed before it has been verified.
 
 ## Features
 
-- Add expenses (title, amount, category, date) and income (source, amount, date)
-- Delete expenses with a confirmation pop-up
-- Total spending and a category summary (SQL `GROUP BY`)
-- Savings for this week, this month and this year (income minus expenses)
-- Reports: weekly, monthly and yearly, with an income vs spending bar chart
+- Public landing page and account registration/sign-in
+- Email/password authentication through Firebase Authentication
+- User-specific expenses and income stored in Cloud Firestore
+- Firestore Security Rules enforce account ownership
+- Add and delete expenses with confirmation
+- Record income and calculate weekly, monthly and yearly savings
+- Category-wise spending summary
+- Weekly, monthly and yearly income-versus-spending reports
 - Six themes: pink, green, blue, white, red and night
-- Responsive layout for phone, tablet and laptop
-- Input checks on the server: no future dates, no zero or negative amounts
+- Responsive design and browser-side form validation
 
-## Tech stack
+## Technology
 
-- **Backend:** Python, Flask, Jinja2 templates
-- **Database:** SQLite, with SQL for INSERT, SELECT, DELETE, SUM, COUNT, GROUP BY and date grouping
-- **Frontend:** HTML, CSS (variables for themes, media queries for responsive layout), vanilla JavaScript
+| Layer | Technology |
+|---|---|
+| Hosting | Firebase Hosting (static site) |
+| Authentication | Firebase Authentication |
+| Database | Cloud Firestore |
+| Frontend | HTML, existing CSS, vanilla JavaScript (ES modules) |
+| Security | Firestore Security Rules; Firebase Auth |
+| Free plan | Firebase Spark (no billing account required) |
 
-## How it works
+The application does not require an always-running Flask server, PostgreSQL instance, Cloud Functions or a Node backend.
 
-1. The browser sends a request to a Flask route (for example `/add`).
-2. Flask validates the input and runs a parameterized SQL query (`?` placeholders, which prevent SQL injection).
-3. The result is passed to a Jinja2 template, which builds the page.
-4. Reports group rows by week, month or year in SQL, and Python merges income and expenses into one table and chart.
+## Run locally
 
-## Project structure
+The frontend is static, but Firebase Auth requires an authorized web origin. For local development, use a local static server (for example, VS Code Live Server) and add its origin to Firebase Authentication > Settings > Authorized domains.
 
-```
-expense-tracker/
-    app.py              Flask routes and validation
-    database.py         SQLite connection and all SQL queries
-    requirements.txt
-    static/
-        style.css       Themes, layout, animations
-        theme.js        Theme switcher, quotes, background drawings
-    templates/
-        base.html       Shared layout
-        landing.html    Intro page
-        index.html      Dashboard
-        add.html        Add expense form
-        add_income.html Add income form
-        report.html     Weekly / monthly / yearly reports
-```
+Before the app can connect to Firebase, configure `public/firebase-config.js` using your Firebase web app configuration. See [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
 
-## Run it locally
+## Deploy
 
-Requires Python 3.8 or newer.
+1. Create a Firebase project on the Spark plan.
+2. Enable Email/Password sign-in.
+3. Create a Cloud Firestore database.
+4. Configure `public/firebase-config.js`.
+5. Install Firebase CLI and select the project with `firebase use --add`.
+6. Deploy rules and hosting with `firebase deploy --only firestore:rules,hosting`.
 
-```
-git clone https://github.com/trupti19T/expense-tracker.git
-cd expense-tracker
-pip install -r requirements.txt
-python app.py
-```
+Detailed instructions and verification steps: [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
 
-Then open http://127.0.0.1:5000 in your browser. The database file is created automatically on the first run. The fonts load from Google Fonts, so an internet connection gives the best look.
+## Security notes
+
+- The Firebase web configuration is public and is not a secret.
+- Never commit service-account JSON, private keys, passwords, or admin credentials.
+- Firestore rules scope every user record to the matching authenticated UID.
+- Deploy and verify the rules before inviting public users.
+- This is a portfolio/demo application, not a bank-grade financial records system. Avoid storing sensitive financial account credentials or payment-card data.
+
+## Repository history
+
+The previous Flask + SQLAlchemy + PostgreSQL implementation and Render configuration are retained in this branch as migration history. The Firebase Hosting configuration serves only the static `public/` directory. The old Render demo is not the production deployment target.
 
 ## Screenshots
 
-(Screenshots will be added here.)
-
-## Current limitations and next steps
-
-- Single user: there is no login yet, and data is stored in a local SQLite file
-- Planned: user accounts so each person sees only their own data, deployment with a hosted database, and CSV export
-
-## What I learned
-
-- Building a Flask app with routes, templates and form handling
-- Writing SQL queries, including grouped results and date grouping
-- Validating input on the server and protecting queries with placeholders
-- Responsive design with CSS media queries, and a theme system with CSS variables
-
-## Author
-
-Trupti R
+Existing design screenshots are retained in `docs/screenshots/`. The original theme stylesheet remains at `static/style.css` and the existing theme switcher remains at `static/theme.js`.
